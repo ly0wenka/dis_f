@@ -117,11 +117,12 @@ def _unwrap_boxed(math: str) -> str:
     return "".join(out)
 
 
-def _sanitize_math(math: str) -> str:
+def _sanitize_math(math: str, *, drop_alignment_markers: bool = False) -> str:
     math = math.strip()
     math, _ = _extract_tag(math)
     math = _unwrap_boxed(math)
-    math = math.replace("&", "")
+    if drop_alignment_markers:
+        math = math.replace("&", "")
     # latex2mathml doesn't always like \text{...}; map to \mathrm{...}
     math = re.sub(r"\\text\s*\{([^}]*)\}", r"\\mathrm{\1}", math)
     # Common spacing commands -> plain space
@@ -132,10 +133,10 @@ def _sanitize_math(math: str) -> str:
     return math
 
 
-def _add_math_paragraph(doc: Document, math: str, tag: Optional[str]) -> None:
+def _add_math_paragraph(doc: Document, math: str, tag: Optional[str], *, drop_alignment_markers: bool = False) -> None:
     p = doc.add_paragraph()
     try:
-        math2docx.add_math(p, _sanitize_math(math))
+        math2docx.add_math(p, _sanitize_math(math, drop_alignment_markers=drop_alignment_markers))
     except Exception:
         # Fallback: write LaTeX source as plain text so nothing is lost.
         p.add_run(math)
@@ -231,6 +232,145 @@ def _add_rich_paragraph(doc: Document, text: str, style: Optional[str] = None) -
                 p.add_run(val)
 
 
+def _split_table_cells(row: str) -> List[str]:
+    """
+    Split a LaTeX table row into cells, avoiding splits inside math mode.
+    """
+    cells: List[str] = []
+    buf: List[str] = []
+
+    i = 0
+    in_math = False
+    in_display_math = False
+    in_paren_math = False
+
+    def flush() -> None:
+        val = "".join(buf).strip()
+        buf.clear()
+        cells.append(val)
+
+    while i < len(row):
+        if row.startswith("\\(", i):
+            in_paren_math = True
+            buf.append("\\(")
+            i += 2
+            continue
+        if row.startswith("\\)", i):
+            in_paren_math = False
+            buf.append("\\)")
+            i += 2
+            continue
+        if row.startswith("$$", i) and not in_paren_math:
+            in_display_math = not in_display_math
+            buf.append("$$")
+            i += 2
+            continue
+        ch = row[i]
+        if ch == "$" and not in_paren_math:
+            # toggle inline math
+            in_math = not in_math
+            buf.append(ch)
+            i += 1
+            continue
+        if ch == "&" and not in_math and not in_display_math and not in_paren_math:
+            flush()
+            i += 1
+            continue
+        buf.append(ch)
+        i += 1
+    flush()
+    return cells
+
+
+def _emit_longtable_as_paragraphs(doc: Document, lines: List[str], start_index: int) -> int:
+    """
+    Convert \\begin{longtable}...\\end{longtable} into plain paragraphs (no Word tables).
+    Returns the next line index after \\end{longtable}.
+    """
+    i = start_index
+    if not re.match(r"\\begin\{longtable\}\s*\{", lines[i].strip()):
+        raise ValueError("Expected longtable begin at start_index.")
+
+    caption: Optional[str] = None
+    i += 1
+
+    row_buf: List[str] = []
+
+    def finalize_row(row_text: str) -> None:
+        row_text = row_text.strip()
+        if not row_text:
+            return
+        row_text = re.sub(r"\\\\\s*$", "", row_text).strip()
+        row_text = row_text.replace("\\hfill", " ")
+        row_text = re.sub(r"\s+", " ", row_text).strip()
+        if not row_text:
+            return
+
+        cells = _split_table_cells(row_text)
+        cells = [c.strip() for c in cells if c.strip()]
+        if not cells:
+            return
+
+        # Heuristics: render common 2/3-column tables as readable text lines.
+        if len(cells) == 2:
+            _add_rich_paragraph(doc, f"{cells[0]} — {cells[1]}", style="List Bullet")
+        elif len(cells) == 3:
+            lead = cells[0]
+            if re.fullmatch(r"\d+", lead):
+                _add_rich_paragraph(doc, f"{cells[1]} — {cells[2]}", style="List Number")
+            else:
+                _add_rich_paragraph(doc, f"{cells[0]} | {cells[1]} | {cells[2]}")
+        else:
+            _add_rich_paragraph(doc, " | ".join(cells))
+
+    while i < len(lines):
+        s = lines[i].strip()
+        if s.startswith("\\end{longtable}"):
+            break
+
+        if not s or s == "\\hline":
+            i += 1
+            continue
+
+        if s.startswith("\\caption"):
+            try:
+                cap, _ = _find_balanced_braces(s, s.find("{"))
+                caption = cap.strip()
+            except Exception:
+                caption = None
+            i += 1
+            continue
+
+        if s.startswith("\\label") or s.startswith("\\addcontentsline"):
+            i += 1
+            continue
+
+        # Accumulate row lines until the LaTeX row terminator \\ is reached.
+        row_buf.append(s)
+        combined = " ".join(row_buf).strip()
+        if re.search(r"\\\\\s*$", combined):
+            finalize_row(combined)
+            row_buf.clear()
+        i += 1
+
+    # Flush any unterminated row
+    if row_buf:
+        finalize_row(" ".join(row_buf))
+        row_buf.clear()
+
+    if caption:
+        p = doc.add_paragraph()
+        r = p.add_run(caption)
+        r.italic = True
+
+    # Skip the \end{longtable} line
+    while i < len(lines) and "\\end{longtable}" not in lines[i]:
+        i += 1
+    if i < len(lines):
+        i += 1
+    return i
+
+
 def _set_default_font(doc: Document, font_name: str = "Times New Roman", font_size_pt: int = 12) -> None:
     style = doc.styles["Normal"]
     font = style.font
@@ -322,7 +462,7 @@ def convert_tex_to_docx(input_tex: str, output_docx: str) -> None:
             i += 1
             continue
 
-        m = re.match(r"\\(subsubsection|subsection|section)\s*\{", stripped)
+        m = re.match(r"\\(subsubsection|subsection|section)\*?\s*\{", stripped)
         if m:
             flush_paragraph()
             content, _ = _find_balanced_braces(stripped, stripped.find("{"))
@@ -362,10 +502,20 @@ def convert_tex_to_docx(input_tex: str, output_docx: str) -> None:
                 parts = [p.strip() for p in re.split(r"\\\\\s*", math_content) if p.strip()]
                 for part in parts:
                     part_clean, tag = _extract_tag(part)
-                    _add_math_paragraph(doc, part_clean, tag)
+                    _add_math_paragraph(doc, part_clean, tag, drop_alignment_markers=True)
             else:
                 math_clean, tag = _extract_tag(math_content)
                 _add_math_paragraph(doc, math_clean, tag)
+            continue
+
+        if re.match(r"\\begin\{longtable\}\s*\{", stripped):
+            flush_paragraph()
+            i = _emit_longtable_as_paragraphs(doc, lines, i)
+            continue
+
+        if stripped.startswith("\\addcontentsline"):
+            flush_paragraph()
+            i += 1
             continue
 
         if stripped.startswith("\\begin{itemize}") or stripped.startswith("\\begin{enumerate}"):
