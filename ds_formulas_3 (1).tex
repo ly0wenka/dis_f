@@ -1,0 +1,987 @@
+\documentclass[14pt, a4paper]{extarticle}
+\usepackage[utf8]{inputenc}
+\usepackage[english,ukrainian]{babel}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{longtable}
+\usepackage{multirow}
+
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\usepackage[T2A]{fontenc}
+
+\geometry{top=2cm, bottom=2cm, left=0.1cm, right=2cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+}
+
+% Нумерація формул за розділами
+\numberwithin{equation}{section}
+
+% Стиль для позначень
+\newtheorem{notation}{Позначення}[section]
+
+\title{Повний список формул\\інформаційної технології ДІПДО\\
+\large{Динамічна Ідентифікація та Параметризація Динамічних Об'єктів}}
+\author{Наукове дослідження}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+У даному документі представлено повний перелік математичних формул, що використовуються в інформаційній технології для динамічної ідентифікації та параметризації об'єктів (ДІПДО). Робота охоплює формули для оптичного потоку, оцінки глибини (включаючи методи Blur та Gradient), обчислення параметрів динамічних об'єктів, методів ансамблю, метрик якості та візуалізації результатів.
+\end{abstract}
+
+\tableofcontents
+
+\newpage
+
+
+
+\section{Формули для оптичного потоку}
+
+\subsection{Метод Farneback (поліноміальне розширення)}
+
+\begin{equation}
+\boxed{f(x) \approx x^T A x + b^T x + c} \tag{1}
+\end{equation}
+
+\begin{align}
+f_1(x) &= x^T A_1 x + b_1^T x + c_1 \tag{2} \\
+f_2(x) &= f_1(x - d) \approx (x-d)^T A_1 (x-d) + b_1^T (x-d) + c_1 \tag{3}
+\end{align}
+
+\begin{align}
+A_2 &= A_1 \tag{4} \\
+b_2 &= b_1 - 2A_1 d \tag{5} \\
+c_2 &= d^T A_1 d - b_1^T d + c_1 \tag{6}
+\end{align}
+
+\begin{equation}
+\boxed{d = -\frac{1}{2} A_1^{-1} (b_2 - b_1)} \tag{7}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $f(x)$ — поліноміальне представлення зображення в точці $x$
+\item $A$ — матриця квадратичних коефіцієнтів
+\item $b$ — вектор лінійних коефіцієнтів
+\item $c$ — вільний член
+\item $d$ — вектор зміщення між кадрами
+\end{itemize}
+
+\subsection{Метод Лукаса-Канаде (Lucas-Kanade)}
+
+\begin{equation}
+\boxed{I_x u + I_y v + I_t = 0} \tag{8}
+\end{equation}
+
+\begin{equation}
+\begin{bmatrix} 
+I_x(p_1) & I_y(p_1) \\ 
+I_x(p_2) & I_y(p_2) \\ 
+\vdots & \vdots \\ 
+I_x(p_n) & I_y(p_n) 
+\end{bmatrix} 
+\begin{bmatrix} u \\ v \end{bmatrix} = 
+-\begin{bmatrix} I_t(p_1) \\ I_t(p_2) \\ \vdots \\ I_t(p_n) \end{bmatrix} \tag{9}
+\end{equation}
+
+\begin{equation}
+\boxed{\begin{bmatrix} u \\ v \end{bmatrix} = (A^T A)^{-1} A^T b} \tag{10}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $I_x = \frac{\partial I}{\partial x}$ — просторовий градієнт по осі $x$
+\item $I_y = \frac{\partial I}{\partial y}$ — просторовий градієнт по осі $y$
+\item $I_t = \frac{\partial I}{\partial t}$ — часовий градієнт
+\item $p_i$ — пікселі у вікні аналізу
+\item $A$ — матриця градієнтів інтенсивності
+\item $b$ — вектор часових різниць
+\end{itemize}
+
+\subsection{Метод Хорна-Шунка (Horn-Schunck)}
+
+\begin{equation}
+\boxed{E = \iint \left[(I_x u + I_y v + I_t)^2 + \alpha^2 \left( \|\nabla u\|^2 + \|\nabla v\|^2 \right) \right] dx\,dy} \tag{11}
+\end{equation}
+
+\begin{align}
+I_x (I_x u + I_y v + I_t) - \alpha^2 \nabla^2 u &= 0 \tag{12} \\
+I_y (I_x u + I_y v + I_t) - \alpha^2 \nabla^2 v &= 0 \tag{13}
+\end{align}
+
+\begin{align}
+\boxed{u^{k+1} = \bar{u}^k - \frac{I_x (I_x \bar{u}^k + I_y \bar{v}^k + I_t)}{\alpha^2 + I_x^2 + I_y^2}} \tag{14} \\
+\boxed{v^{k+1} = \bar{v}^k - \frac{I_y (I_x \bar{u}^k + I_y \bar{v}^k + I_t)}{\alpha^2 + I_x^2 + I_y^2}} \tag{15}
+\end{align}
+
+\textbf{де:}
+\begin{itemize}
+\item $E$ — функціонал, що мінімізується
+\item $\alpha$ — параметр регуляризації (вага гладкості)
+\item $\nabla u = \left(\frac{\partial u}{\partial x}, \frac{\partial u}{\partial y}\right)$ — градієнт поля $u$
+\item $\nabla^2 u$ — оператор Лапласа
+\item $\bar{u}^k$, $\bar{v}^k$ — усереднені значення на $k$-й ітерації
+\end{itemize}
+
+\subsection{Метод FlowNet (згорткова нейронна мережа)}
+
+\begin{equation}
+\Phi_{\text{encoder}}(I_1, I_2) = \text{Conv}_{1 \times 1}(\text{Conv}_{3 \times 3}(\cdots \text{Conv}_{7 \times 7}([I_1, I_2])\cdots)) \tag{16}
+\end{equation}
+
+\begin{equation}
+\boxed{\hat{F} = \Phi_{\text{decoder}}(\Phi_{\text{encoder}}(I_1, I_2))} \tag{17}
+\end{equation}
+
+\begin{equation}
+\boxed{\mathcal{L}_{\text{EPE}} = \frac{1}{N} \sum_{i=1}^N \|F_{\text{pred}}(i) - F_{\text{gt}}(i)\|_2} \tag{18}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $I_1, I_2$ — два послідовних кадри
+\item $\Phi_{\text{encoder}}$ — згортковий енкодер
+\item $\Phi_{\text{decoder}}$ — декодер
+\item $\hat{F}$ — передбачений оптичний потік
+\item $F_{\text{gt}}$ — істинний оптичний потік
+\item $\mathcal{L}_{\text{EPE}}$ — функція втрат (End-Point Error)
+\item $\|\cdot\|_2$ — евклідова норма
+\end{itemize}
+
+\subsection{Метод RAFT (Recurrent All-pairs Field Transforms)}
+
+\begin{equation}
+\boxed{C_{ijkl} = \frac{1}{\sqrt{HW}} \sum_{h,w} f_{ijhw} \cdot g_{klhw}} \tag{19}
+\end{equation}
+
+\begin{align}
+x_{t+1} &= x_t + \Delta x_t \tag{20} \\
+\boxed{\Delta x_t, h_{t+1} = \text{GRU}([x_t, C(x_t)], h_t)} \tag{21}
+\end{align}
+
+\textbf{де:}
+\begin{itemize}
+\item $C_{ijkl}$ — кореляційний об'єм
+\item $H, W$ — висота та ширина зображення
+\item $f_{ijhw}, g_{klhw}$ — ознаки зображень
+\item $x_t$ — поточний стан потоку
+\item $h_t$ — прихований стан GRU
+\item GRU — Gated Recurrent Unit
+\end{itemize}
+
+\newpage
+
+\section{Формули для оцінки глибини}
+
+\subsection{Метод Blur (розмиття як проксі глибини)}
+
+\begin{equation}
+\boxed{I_{\text{gray}}(x,y) = 0.299 \cdot R(x,y) + 0.587 \cdot G(x,y) + 0.114 \cdot B(x,y)} \tag{22}
+\end{equation}
+
+\begin{equation}
+\boxed{G(x,y) = \frac{1}{2\pi\sigma^2} e^{-\frac{x^2 + y^2}{2\sigma^2}}} \tag{23}
+\end{equation}
+
+\begin{equation}
+\boxed{D_{\text{blur}}(x,y) = (I_{\text{gray}} * G)(x,y) = \sum_{i=-k}^{k} \sum_{j=-k}^{k} I_{\text{gray}}(x+i, y+j) \cdot G(i,j)} \tag{24}
+\end{equation}
+
+\begin{equation}
+\boxed{D_{\text{norm}}(x,y) = \frac{D_{\text{blur}}(x,y) - \min(D_{\text{blur}})}{\max(D_{\text{blur}}) - \min(D_{\text{blur}})} \times 255} \tag{25}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $R, G, B$ — кольорові канали зображення
+\item $I_{\text{gray}}$ — зображення в градаціях сірого
+\item $G(x,y)$ — ядро Гауса
+\item $\sigma$ — стандартне відхилення (параметр розмиття)
+\item $k$ — радіус ядра (зазвичай $k = 3\sigma$)
+\item $D_{\text{blur}}$ — карта "глибини", отримана розмиттям
+\item $D_{\text{norm}}$ — нормалізована карта глибини
+\item $*$ — операція згортки
+\end{itemize}
+
+\subsection{Метод Gradient (градієнтний метод оцінки глибини)}
+
+\begin{equation}
+\boxed{\nabla^2 I = \frac{\partial^2 I}{\partial x^2} + \frac{\partial^2 I}{\partial y^2}} \tag{26}
+\end{equation}
+
+\begin{equation}
+\nabla^2 I(x,y) = I(x+1,y) + I(x-1,y) + I(x,y+1) + I(x,y-1) - 4I(x,y) \tag{27}
+\end{equation}
+
+\begin{equation}
+L = \begin{bmatrix}
+0 & 1 & 0 \\
+1 & -4 & 1 \\
+0 & 1 & 0
+\end{bmatrix} \tag{28}
+\end{equation}
+
+\begin{equation}
+\boxed{D_{\text{grad}}(x,y) = |(I_{\text{gray}} * L)(x,y)|} \tag{29}
+\end{equation}
+
+\begin{equation}
+L_{\text{full}} = \begin{bmatrix}
+1 & 1 & 1 \\
+1 & -8 & 1 \\
+1 & 1 & 1
+\end{bmatrix} \tag{30}
+\end{equation}
+
+\begin{equation}
+G_x = \begin{bmatrix}
+-1 & 0 & 1 \\
+-2 & 0 & 2 \\
+-1 & 0 & 1
+\end{bmatrix} * I_{\text{gray}}, \quad
+G_y = \begin{bmatrix}
+-1 & -2 & -1 \\
+0 & 0 & 0 \\
+1 & 2 & 1
+\end{bmatrix} * I_{\text{gray}} \tag{31}
+\end{equation}
+
+\begin{equation}
+\boxed{D_{\text{sobel}}(x,y) = \sqrt{G_x(x,y)^2 + G_y(x,y)^2}} \tag{32}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $\nabla^2 I$ — оператор Лапласа
+\item $L$ — ядро Лапласа 3×3
+\item $L_{\text{full}}$ — розширене ядро Лапласа (з діагоналями)
+\item $D_{\text{grad}}$ — карта глибини на основі градієнтів
+\item $G_x, G_y$ — градієнти Собеля по осях $x$ та $y$
+\item $D_{\text{sobel}}$ — карта глибини на основі оператора Собеля
+\end{itemize}
+
+\subsection{Метод MiDaS (Monocular Depth Estimation)}
+
+\begin{equation}
+d_{\text{pred}}(p) = \alpha \cdot d_{\text{true}}(p) + \beta \tag{33}
+\end{equation}
+
+\begin{equation}
+\boxed{\mathcal{L} = \frac{1}{N} \sum_{i=1}^N \frac{1}{2\sigma_i^2} \mathcal{L}_i + \log \sigma_i} \tag{34}
+\end{equation}
+
+\begin{equation}
+\boxed{\mathcal{L}_{\text{SI}} = \frac{1}{N} \sum_{i,j} \left[ (\log y_i - \log \hat{y}_i) - (\log y_j - \log \hat{y}_j) \right]^2} \tag{35}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $d_{\text{pred}}(p)$ — передбачена глибина в точці $p$
+\item $d_{\text{true}}(p)$ — істинна глибина
+\item $\alpha, \beta$ — параметри масштабу та зсуву
+\item $\mathcal{L}$ — багатомасштабна функція втрат
+\item $\mathcal{L}_{\text{SI}}$ — інваріантна до масштабу втрата
+\item $\sigma_i$ — параметр масштабу для $i$-го рівня
+\item $y_i$ — істинне значення глибини
+\item $\hat{y}_i$ — передбачене значення глибини
+\end{itemize}
+
+\subsection{Метод DPT (Dense Prediction Transformer)}
+
+\begin{equation}
+\boxed{\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V} \tag{36}
+\end{equation}
+
+\begin{equation}
+z_0 = [x_{\text{class}}; x_p^1 E; x_p^2 E; \ldots; x_p^N E] + E_{\text{pos}} \tag{37}
+\end{equation}
+
+\begin{equation}
+\boxed{z_l = \text{MSA}(\text{LN}(z_{l-1})) + z_{l-1}, \quad l=1,\ldots,L} \tag{38}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $Q, K, V$ — матриці запитів, ключів, значень
+\item $d_k$ — розмірність простору ключів
+\item $\text{Attention}$ — функція уваги
+\item $z_0$ — вхідні токени
+\item $x_{\text{class}}$ — спеціальний токен класифікації
+\item $x_p^i$ — $i$-й патч зображення
+\item $E$ — матриця проекції патчів
+\item $E_{\text{pos}}$ — позиційне кодування
+\item $\text{MSA}$ — багатоголова увага
+\item $\text{LN}$ — шарова нормалізація
+\end{itemize}
+
+\subsection{Метод GeoNet (сумісна оцінка глибини та потоку)}
+
+\begin{equation}
+\boxed{I_2(p) = I_1(p + f(p))} \tag{39}
+\end{equation}
+
+\begin{equation}
+\boxed{f(p) = T(p) \cdot \frac{Z(p) - Z_0}{Z(p)} \cdot \text{proj}(p)} \tag{40}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $I_1, I_2$ — два послідовних кадри
+\item $f(p)$ — оптичний потік у точці $p$
+\item $Z(p)$ — глибина в точці $p$
+\item $T(p)$ — матриця перетворення камери
+\item $Z_0$ — опорна глибина
+\item $\text{proj}(p)$ — проекція точки $p$
+\end{itemize}
+
+\newpage
+
+\section{Формули для параметрів динамічних об'єктів}
+
+\subsection{Швидкість об'єкта}
+
+\begin{equation}
+\boxed{v = \frac{1}{N_\Omega} \sum_{(x,y) \in \Omega} \|F(x,y)\|} \tag{41}
+\end{equation}
+
+\begin{equation}
+\boxed{v = \frac{1}{|\Omega|} \iint_{\Omega} \sqrt{u(x,y)^2 + v(x,y)^2} \, dx\,dy} \tag{42}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $v$ — швидкість об'єкта (пікселів/кадр)
+\item $\Omega$ — область, що відповідає об'єкту
+\item $N_\Omega = |\Omega|$ — кількість пікселів в області
+\item $F(x,y) = [u(x,y), v(x,y)]^T$ — вектор оптичного потоку
+\item $\|\cdot\|$ — евклідова норма
+\end{itemize}
+
+\subsection{Напрямок руху}
+
+\begin{equation}
+\theta(x,y) = \arctan\left( \frac{v(x,y)}{u(x,y)} \right) \tag{43}
+\end{equation}
+
+\begin{equation}
+\boxed{\theta = \arctan\left( \frac{\sum_{(x,y) \in \Omega} \sin\theta(x,y)}{\sum_{(x,y) \in \Omega} \cos\theta(x,y)} \right)} \tag{44}
+\end{equation}
+
+\begin{equation}
+\boxed{\theta = \frac{1}{N_\Omega} \sum_{(x,y) \in \Omega} \arctan\left( \frac{v(x,y)}{u(x,y)} \right)} \tag{45}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $\theta$ — напрямок руху об'єкта (радіани)
+\item $\theta(x,y)$ — напрямок руху в точці $(x,y)$
+\item $u(x,y), v(x,y)$ — компоненти оптичного потоку
+\end{itemize}
+
+\subsection{Просторове положення}
+
+\begin{align}
+\boxed{x_c = \frac{x_{\min} + x_{\max}}{2}} \tag{46} \\
+\boxed{y_c = \frac{y_{\min} + y_{\max}}{2}} \tag{47}
+\end{align}
+
+\begin{equation}
+\boxed{z = \text{median}\left\{ D(x,y) \mid (x,y) \in \Omega \right\}} \tag{48}
+\end{equation}
+
+\begin{equation}
+\boxed{z = \frac{1}{|\Omega|} \iint_{\Omega} D(x,y) \, dx\,dy} \tag{49}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $(x_c, y_c)$ — координати центру об'єкта
+\item $x_{\min}, x_{\max}, y_{\min}, y_{\max}$ — границі bounding box
+\item $z$ — глибина (Z-координата) об'єкта
+\item $D(x,y)$ — карта глибини
+\item $\Omega$ — область об'єкта
+\end{itemize}
+
+\subsection{Траєкторія об'єкта}
+
+\begin{equation}
+\boxed{T(t) = \left\{ p(t_1), p(t_2), \ldots, p(t_n) \right\}} \tag{50}
+\end{equation}
+
+\begin{equation}
+\boxed{\tilde{p}(t_i) = \frac{1}{2k+1} \sum_{j=-k}^{k} p(t_{i+j})} \tag{51}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $T(t)$ — траєкторія об'єкта
+\item $p(t_i) = (x_i, y_i)$ — положення об'єкта в момент $t_i$
+\item $\tilde{p}(t_i)$ — згладжена траєкторія
+\item $k$ — радіус вікна згладжування
+\end{itemize}
+
+\subsection{Прискорення об'єкта}
+
+\begin{equation}
+\boxed{a = \frac{v(t+1) - v(t)}{\Delta t}} \tag{52}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $a$ — прискорення об'єкта
+\item $v(t)$ — швидкість в момент $t$
+\item $\Delta t$ — часовий інтервал ($\Delta t = 1$ кадр)
+\end{itemize}
+
+\newpage
+
+\section{Формули для методів ансамблю}
+
+\subsection{Бутстреп-агрегація (Bagging)}
+
+\begin{equation}
+\boxed{\hat{y}_{\text{bag}}(x) = \frac{1}{M} \sum_{i=1}^{M} f_i(x)} \tag{53}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $\hat{y}_{\text{bag}}(x)$ — ансамблевий прогноз
+\item $M$ — кількість моделей в ансамблі
+\item $f_i(x)$ — прогноз $i$-ї моделі
+\end{itemize}
+
+\subsection{Бустинг (Boosting)}
+
+\begin{equation}
+\boxed{\hat{y}_{\text{boost}}(x) = \sum_{i=1}^{M} \alpha_i f_i(x)} \tag{54}
+\end{equation}
+
+\begin{equation}
+\boxed{\alpha_i = \frac{1}{2} \ln\left( \frac{1 - \epsilon_i}{\epsilon_i} \right)} \tag{55}
+\end{equation}
+
+\begin{equation}
+\boxed{D_{\text{final}}(x) = \begin{cases} 
+D_1(x), & \text{якщо } |\nabla D_1(x)| \leq \tau \\ 
+D_2(x), & \text{якщо } |\nabla D_1(x)| > \tau 
+\end{cases}} \tag{56}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $\hat{y}_{\text{boost}}(x)$ — бустинг-прогноз
+\item $\alpha_i$ — вага $i$-ї моделі
+\item $\epsilon_i$ — помилка $i$-ї моделі
+\item $D_{\text{final}}$ — фінальна карта глибини
+\item $D_1, D_2$ — карти глибини від різних моделей
+\item $\nabla D_1$ — градієнт карти глибини
+\item $\tau$ — поріг для маски помилок
+\end{itemize}
+
+\newpage
+
+\section{Формули для DETR (Detection Transformer)}
+
+\subsection{Архітектура трансформера}
+
+\begin{equation}
+\boxed{\text{Attention}(Q, K, V) = \text{softmax}\left( \frac{QK^T}{\sqrt{d_k}} \right) V} \tag{57}
+\end{equation}
+
+\begin{align}
+\boxed{\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h) W^O} \tag{58} \\
+\text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V) \tag{59}
+\end{align}
+
+\textbf{де:}
+\begin{itemize}
+\item $\text{Attention}$ — функція уваги
+\item $Q, K, V$ — матриці запитів, ключів, значень
+\item $d_k$ — розмірність простору ключів
+\item $\text{MultiHead}$ — багатоголова увага
+\item $h$ — кількість голів уваги
+\item $W_i^Q, W_i^K, W_i^V, W^O$ — матриці проекцій
+\item $\text{Concat}$ — операція конкатенації
+\end{itemize}
+
+\subsection{Функція втрат DETR}
+
+\begin{equation}
+\boxed{\hat{\sigma} = \arg\min_{\sigma \in \mathfrak{S}_N} \sum_{i=1}^N \mathcal{L}_{\text{match}}(y_i, \hat{y}_{\sigma(i)})} \tag{60}
+\end{equation}
+
+\begin{equation}
+\boxed{\mathcal{L}_{\text{Hungarian}}(y, \hat{y}) = \sum_{i=1}^N \left[ -\log \hat{p}_{\hat{\sigma}(i)}(c_i) + \mathbf{1}_{\{c_i \neq \varnothing\}} \mathcal{L}_{\text{box}}(b_i, \hat{b}_{\hat{\sigma}(i)}) \right]} \tag{61}
+\end{equation}
+
+\begin{equation}
+\boxed{\mathcal{L}_{\text{box}}(b_i, \hat{b}_{\hat{\sigma}(i)}) = \lambda_{\text{IoU}} \mathcal{L}_{\text{IoU}}(b_i, \hat{b}_{\hat{\sigma}(i)}) + \lambda_{L1} \|b_i - \hat{b}_{\hat{\sigma}(i)}\|_1} \tag{62}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $\hat{\sigma}$ — оптимальне парування (угорський алгоритм)
+\item $\mathfrak{S}_N$ — множина всіх перестановок
+\item $\mathcal{L}_{\text{match}}$ — функція відповідності
+\item $\mathcal{L}_{\text{Hungarian}}$ — угорська втрата
+\item $\hat{p}_{\hat{\sigma}(i)}(c_i)$ — ймовірність класу $c_i$
+\item $\mathbf{1}_{\{c_i \neq \varnothing\}}$ — індикаторна функція
+\item $\mathcal{L}_{\text{box}}$ — втрата для bounding box
+\item $b_i, \hat{b}_{\hat{\sigma}(i)}$ — істинний та передбачений bounding box
+\item $\lambda_{\text{IoU}}, \lambda_{L1}$ — вагові коефіцієнти
+\item $\|\cdot\|_1$ — L1-норма
+\end{itemize}
+
+\newpage
+
+\section{Формули для метрик якості}
+
+\subsection{EPE (End-Point Error)}
+\begin{equation}
+\boxed{\text{EPE} = \frac{1}{N} \sum_{i=1}^N \sqrt{(u_i - \hat{u}_i)^2 + (v_i - \hat{v}_i)^2}} \tag{63}
+\end{equation}
+
+\subsection{AAE (Angular Average Error)}
+\begin{equation}
+\boxed{\text{AAE} = \frac{1}{N} \sum_{i=1}^N \arccos\left( \frac{u_i \hat{u}_i + v_i \hat{v}_i + 1}{\sqrt{u_i^2 + v_i^2 + 1} \cdot \sqrt{\hat{u}_i^2 + \hat{v}_i^2 + 1}} \right)} \tag{64}
+\end{equation}
+
+\subsection{RMSE (Root Mean Square Error)}
+\begin{equation}
+\boxed{\text{RMSE} = \sqrt{\frac{1}{N} \sum_{i=1}^N (d_i - \hat{d}_i)^2}} \tag{65}
+\end{equation}
+
+\subsection{MAE (Mean Absolute Error)}
+\begin{equation}
+\boxed{\text{MAE} = \frac{1}{N} \sum_{i=1}^N |d_i - \hat{d}_i|} \tag{66}
+\end{equation}
+
+\subsection{PSNR (Peak Signal-to-Noise Ratio)}
+\begin{equation}
+\boxed{\text{MSE} = \frac{1}{N} \sum_{i=1}^N (d_i - \hat{d}_i)^2} \tag{67}
+\end{equation}
+\begin{equation}
+\boxed{\text{PSNR} = 10 \cdot \log_{10}\left( \frac{\text{MAX}^2}{\text{MSE}} \right)} \tag{68}
+\end{equation}
+
+\subsection{IoU (Intersection over Union)}
+\begin{equation}
+\boxed{\text{IoU} = \frac{|A \cap B|}{|A \cup B|} = \frac{\sum_{i=1}^N \mathbf{1}_{\{A_i=1 \land B_i=1\}}}{\sum_{i=1}^N \mathbf{1}_{\{A_i=1 \lor B_i=1\}}}} \tag{69}
+\end{equation}
+
+\subsection{DICE коефіцієнт}
+\begin{equation}
+\boxed{\text{DICE} = \frac{2|A \cap B|}{|A| + |B|} = \frac{2 \cdot \text{TP}}{2 \cdot \text{TP} + \text{FP} + \text{FN}}} \tag{70}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $u_i, v_i$ — істинні компоненти оптичного потоку
+\item $\hat{u}_i, \hat{v}_i$ — передбачені компоненти оптичного потоку
+\item $d_i$ — істинна глибина
+\item $\hat{d}_i$ — передбачена глибина
+\item $N$ — кількість пікселів
+\item $\text{MAX}$ — максимальне значення пікселя (255)
+\item $A, B$ — бінарні маски
+\item $\mathbf{1}$ — індикаторна функція
+\item $\text{TP}, \text{FP}, \text{FN}$ — істинно-позитивні, хибно-позитивні, хибно-негативні
+\end{itemize}
+
+\newpage
+
+\section{Формули для метрик виявлення}
+
+\subsection{Точність (Precision)}
+\begin{equation}
+\boxed{\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}} \tag{71}
+\end{equation}
+
+\subsection{Повнота (Recall)}
+\begin{equation}
+\boxed{\text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}} \tag{72}
+\end{equation}
+
+\subsection{F1-міра}
+\begin{equation}
+\boxed{F_1 = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}} \tag{73}
+\end{equation}
+
+\subsection{AUC-ROC (Area Under ROC Curve)}
+\begin{equation}
+\boxed{\text{AUC} = \int_0^1 \text{TPR}(FPR) \, d(\text{FPR})} \tag{74}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $\text{TP}$ — True Positive (істинно-позитивні)
+\item $\text{TN}$ — True Negative (істинно-негативні)
+\item $\text{FP}$ — False Positive (хибно-позитивні)
+\item $\text{FN}$ — False Negative (хибно-негативні)
+\item $\text{TPR} = \frac{\text{TP}}{\text{TP} + \text{FN}}$ — True Positive Rate
+\item $\text{FPR} = \frac{\text{FP}}{\text{FP} + \text{TN}}$ — False Positive Rate
+\end{itemize}
+
+\newpage
+
+\section{Формули для нормалізації}
+
+\subsection{Min-Max нормалізація}
+\begin{equation}
+\boxed{D_{\text{norm}}(x,y) = \frac{D(x,y) - \min(D)}{\max(D) - \min(D)} \times 255} \tag{75}
+\end{equation}
+
+\subsection{Z-нормалізація (стандартизація)}
+\begin{equation}
+\boxed{\mu_D = \frac{1}{N} \sum_{i=1}^N D(x_i,y_i)} \tag{76}
+\end{equation}
+\begin{equation}
+\boxed{\sigma_D = \sqrt{\frac{1}{N} \sum_{i=1}^N (D(x_i,y_i) - \mu_D)^2}} \tag{77}
+\end{equation}
+\begin{equation}
+\boxed{D_{\text{std}}(x,y) = \frac{D(x,y) - \mu_D}{\sigma_D}} \tag{78}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $D_{\text{norm}}$ — нормалізована карта глибини
+\item $D_{\text{std}}$ — стандартизована карта глибини
+\item $\mu_D$ — середнє значення карти глибини
+\item $\sigma_D$ — стандартне відхилення карти глибини
+\item $\min(D), \max(D)$ — мінімальне та максимальне значення
+\item $N$ — кількість пікселів
+\end{itemize}
+
+\newpage
+
+\section{Формули для візуалізації}
+
+\subsection{Перетворення оптичного потоку в RGB}
+
+\begin{equation}
+\boxed{h = \frac{\arctan(v, u)}{2\pi} \times 180^\circ} \tag{79}
+\end{equation}
+\begin{equation}
+\boxed{s = 255} \tag{80}
+\end{equation}
+\begin{equation}
+\boxed{v_{\text{bright}} = \min\left(255, \frac{\sqrt{u^2 + v^2}}{\max(\sqrt{u^2 + v^2})} \times 255\right)} \tag{81}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $h$ — відтінок (Hue)
+\item $s$ — насиченість (Saturation)
+\item $v_{\text{bright}}$ — яскравість (Value)
+\item $\arctan(v, u)$ — арктангенс з урахуванням знаків
+\end{itemize}
+
+\subsection{Колірна карта глибини (Jet colormap)}
+\begin{equation}
+\boxed{R(z) = \begin{cases} 
+0, & z < 0.2 \\ 
+4z - 0.8, & 0.2 \leq z < 0.45 \\ 
+1, & 0.45 \leq z < 0.75 \\ 
+-4z + 4, & 0.75 \leq z < 1 \\ 
+0, & z \geq 1 
+\end{cases}} \tag{82}
+\end{equation}
+\begin{equation}
+\boxed{G(z) = \begin{cases}
+0, & z < 0.2 \\
+4z - 0.8, & 0.2 \leq z < 0.35 \\
+1, & 0.35 \leq z < 0.65 \\
+-4z + 3.6, & 0.65 \leq z < 0.9 \\
+0, & z \geq 0.9
+\end{cases}} \tag{83}
+\end{equation}
+\begin{equation}
+\boxed{B(z) = \begin{cases}
+4z + 0.2, & z < 0.2 \\
+1, & 0.2 \leq z < 0.45 \\
+-4z + 2.8, & 0.45 \leq z < 0.7 \\
+0, & z \geq 0.7
+\end{cases}} \tag{84}
+\end{equation}
+
+\subsection{Колірна карта Plasma для глибини}
+\begin{equation}
+\boxed{\text{Plasma}(z) = \text{interpolate}([0,0.2,0.4,0.6,0.8,1], [\text{col}_0, \text{col}_1, \text{col}_2, \text{col}_3, \text{col}_4, \text{col}_5])} \tag{85}
+\end{equation}
+
+\textbf{де:}
+\begin{itemize}
+\item $R(z), G(z), B(z)$ — компоненти кольору Jet colormap
+\item $z$ — нормалізована глибина ($0 \leq z \leq 1$)
+\item $\text{Plasma}(z)$ — колірна карта Plasma
+\item $\text{interpolate}$ — функція лінійної інтерполяції між опорними кольорами
+\item $\text{col}_i$ — опорні кольори
+\end{itemize}
+
+\newpage
+
+\section{Зведена таблиця формул}
+
+\begin{longtable}{|c|p{10cm}|c|}
+\hline
+\textbf{№} & \textbf{Назва} & \textbf{Формула (номер)} \\
+\hline
+1 & Поліноміальне представлення & $f(x) \approx x^T A x + b^T x + c$ \hfill (1) \\
+2 & Перший кадр Farneback & $f_1(x) = x^T A_1 x + b_1^T x + c_1$ \hfill (2) \\
+3 & Другий кадр Farneback & $f_2(x) = f_1(x-d) \approx (x-d)^T A_1 (x-d) + b_1^T (x-d) + c_1$ \hfill (3) \\
+4 & Рівність матриць Farneback & $A_2 = A_1$ \hfill (4) \\
+5 & Рівність векторів Farneback & $b_2 = b_1 - 2A_1 d$ \hfill (5) \\
+6 & Рівність вільних членів Farneback & $c_2 = d^T A_1 d - b_1^T d + c_1$ \hfill (6) \\
+7 & Вектор зміщення Farneback & $d = -\frac{1}{2} A_1^{-1} (b_2 - b_1)$ \hfill (7) \\
+8 & Рівняння оптичного потоку & $I_x u + I_y v + I_t = 0$ \hfill (8) \\
+9 & Система Лукаса-Канаде & $A \begin{bmatrix}u\\v\end{bmatrix} = -b$ \hfill (9) \\
+10 & Розв'язок Лукаса-Канаде & $\begin{bmatrix}u\\v\end{bmatrix} = (A^T A)^{-1} A^T b$ \hfill (10) \\
+11 & Функціонал Хорна-Шунка & $E = \iint [(I_x u + I_y v + I_t)^2 + \alpha^2(\|\nabla u\|^2 + \|\nabla v\|^2)] dx dy$ \hfill (11) \\
+12 & Рівняння Ейлера-Лагранжа (u) & $I_x(I_x u + I_y v + I_t) - \alpha^2 \nabla^2 u = 0$ \hfill (12) \\
+13 & Рівняння Ейлера-Лагранжа (v) & $I_y(I_x u + I_y v + I_t) - \alpha^2 \nabla^2 v = 0$ \hfill (13) \\
+14 & Ітерація Хорна-Шунка (u) & $u^{k+1} = \bar{u}^k - \frac{I_x(I_x\bar{u}^k + I_y\bar{v}^k + I_t)}{\alpha^2 + I_x^2 + I_y^2}$ \hfill (14) \\
+15 & Ітерація Хорна-Шунка (v) & $v^{k+1} = \bar{v}^k - \frac{I_y(I_x\bar{u}^k + I_y\bar{v}^k + I_t)}{\alpha^2 + I_x^2 + I_y^2}$ \hfill (15) \\
+16 & FlowNet енкодер & $\Phi_{\text{encoder}}(I_1,I_2) = \text{Conv}_{1\times1}(\text{Conv}_{3\times3}(\cdots))$ \hfill (16) \\
+17 & FlowNet вихід & $\hat{F} = \Phi_{\text{decoder}}(\Phi_{\text{encoder}}(I_1,I_2))$ \hfill (17) \\
+18 & FlowNet втрати (EPE) & $\mathcal{L}_{\text{EPE}} = \frac{1}{N} \sum \|F_{\text{pred}} - F_{\text{gt}}\|_2$ \hfill (18) \\
+19 & Кореляційний об'єм RAFT & $C_{ijkl} = \frac{1}{\sqrt{HW}} \sum_{h,w} f_{ijhw} \cdot g_{klhw}$ \hfill (19) \\
+20 & Оновлення стану RAFT & $x_{t+1} = x_t + \Delta x_t$ \hfill (20) \\
+21 & GRU-оновлення RAFT & $\Delta x_t, h_{t+1} = \text{GRU}([x_t, C(x_t)], h_t)$ \hfill (21) \\
+22 & Перетворення RGB в сіре & $I_{\text{gray}} = 0.299R + 0.587G + 0.114B$ \hfill (22) \\
+23 & Ядро Гауса & $G(x,y) = \frac{1}{2\pi\sigma^2} e^{-\frac{x^2+y^2}{2\sigma^2}}$ \hfill (23) \\
+24 & Blur глибина (згортка) & $D_{\text{blur}} = I_{\text{gray}} * G$ \hfill (24) \\
+25 & Min-Max нормалізація Blur & $D_{\text{norm}} = \frac{D_{\text{blur}} - \min(D_{\text{blur}})}{\max(D_{\text{blur}}) - \min(D_{\text{blur}})} \times 255$ \hfill (25) \\
+26 & Оператор Лапласа & $\nabla^2 I = \frac{\partial^2 I}{\partial x^2} + \frac{\partial^2 I}{\partial y^2}$ \hfill (26) \\
+27 & Дискретний Лаплас & $\nabla^2 I(x,y) = I(x+1,y)+I(x-1,y)+I(x,y+1)+I(x,y-1)-4I(x,y)$ \hfill (27) \\
+28 & Ядро Лапласа & $L = \begin{bmatrix}0&1&0\\1&-4&1\\0&1&0\end{bmatrix}$ \hfill (28) \\
+29 & Gradient глибина (Лаплас) & $D_{\text{grad}} = |I_{\text{gray}} * L|$ \hfill (29) \\
+30 & Розширене ядро Лапласа & $L_{\text{full}} = \begin{bmatrix}1&1&1\\1&-8&1\\1&1&1\end{bmatrix}$ \hfill (30) \\
+31 & Ядра Собеля & $G_x = \begin{bmatrix}-1&0&1\\-2&0&2\\-1&0&1\end{bmatrix} * I_{\text{gray}}, \quad G_y = \begin{bmatrix}-1&-2&-1\\0&0&0\\1&2&1\end{bmatrix} * I_{\text{gray}}$ \hfill (31) \\
+32 & Gradient глибина (Собель) & $D_{\text{sobel}} = \sqrt{G_x^2 + G_y^2}$ \hfill (32) \\
+33 & MiDaS відносна глибина & $d_{\text{pred}}(p) = \alpha \cdot d_{\text{true}}(p) + \beta$ \hfill (33) \\
+34 & MiDaS багатомасштабна втрата & $\mathcal{L} = \frac{1}{N} \sum \frac{1}{2\sigma_i^2} \mathcal{L}_i + \log \sigma_i$ \hfill (34) \\
+35 & MiDaS інваріантна втрата & $\mathcal{L}_{\text{SI}} = \frac{1}{N} \sum_{i,j} [(\log y_i - \log \hat{y}_i) - (\log y_j - \log \hat{y}_j)]^2$ \hfill (35) \\
+36 & DPT увага (Attention) & $\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$ \hfill (36) \\
+37 & DPT токени & $z_0 = [x_{\text{class}}; x_p^1 E; x_p^2 E; \ldots; x_p^N E] + E_{\text{pos}}$ \hfill (37) \\
+38 & DPT шари трансформера & $z_l = \text{MSA}(\text{LN}(z_{l-1})) + z_{l-1}$ \hfill (38) \\
+39 & GeoNet фотометрична узгодженість & $I_2(p) = I_1(p + f(p))$ \hfill (39) \\
+40 & GeoNet геометрична модель & $f(p) = T(p) \cdot \frac{Z(p)-Z_0}{Z(p)} \cdot \text{proj}(p)$ \hfill (40) \\
+41 & Швидкість об'єкта (дискретна) & $v = \frac{1}{N_\Omega} \sum_{(x,y)\in\Omega} \|F(x,y)\|$ \hfill (41) \\
+42 & Швидкість об'єкта (інтегральна) & $v = \frac{1}{|\Omega|} \iint_{\Omega} \sqrt{u^2+v^2} dx dy$ \hfill (42) \\
+43 & Кут напрямку в точці & $\theta(x,y) = \arctan\left(\frac{v(x,y)}{u(x,y)}\right)$ \hfill (43) \\
+44 & Напрямок руху (векторне усереднення) & $\theta = \arctan\left(\frac{\sum \sin\theta_i}{\sum \cos\theta_i}\right)$ \hfill (44) \\
+45 & Напрямок руху (арифметичне середнє) & $\theta = \frac{1}{N_\Omega} \sum \arctan\left(\frac{v}{u}\right)$ \hfill (45) \\
+46 & Центр об'єкта (X) & $x_c = \frac{x_{\min} + x_{\max}}{2}$ \hfill (46) \\
+47 & Центр об'єкта (Y) & $y_c = \frac{y_{\min} + y_{\max}}{2}$ \hfill (47) \\
+48 & Глибина об'єкта (медіана) & $z = \text{median}\{D(x,y) \mid (x,y)\in\Omega\}$ \hfill (48) \\
+49 & Глибина об'єкта (середнє) & $z = \frac{1}{|\Omega|} \iint_{\Omega} D(x,y) dx dy$ \hfill (49) \\
+50 & Траєкторія об'єкта & $T(t) = \{p(t_1), p(t_2), \ldots, p(t_n)\}$ \hfill (50) \\
+51 & Згладжена траєкторія & $\tilde{p}(t_i) = \frac{1}{2k+1} \sum_{j=-k}^{k} p(t_{i+j})$ \hfill (51) \\
+52 & Прискорення об'єкта & $a = \frac{v(t+1) - v(t)}{\Delta t}$ \hfill (52) \\
+53 & Bagging (усереднення) & $\hat{y}_{\text{bag}}(x) = \frac{1}{M} \sum_{i=1}^{M} f_i(x)$ \hfill (53) \\
+54 & Boosting (зважена сума) & $\hat{y}_{\text{boost}}(x) = \sum_{i=1}^{M} \alpha_i f_i(x)$ \hfill (54) \\
+55 & Boosting ваги моделей & $\alpha_i = \frac{1}{2} \ln\left(\frac{1-\epsilon_i}{\epsilon_i}\right)$ \hfill (55) \\
+56 & Маска помилок Boosting & $D_{\text{final}}(x) = \begin{cases} D_1(x), & |\nabla D_1(x)| \leq \tau \\ D_2(x), & |\nabla D_1(x)| > \tau \end{cases}$ \hfill (56) \\
+57 & DETR увага (загальна) & $\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$ \hfill (57) \\
+58 & DETR багатоголова увага & $\text{MultiHead}(Q,K,V) = \text{Concat}(\text{head}_1,\ldots,\text{head}_h)W^O$ \hfill (58) \\
+59 & DETR голова уваги & $\text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)$ \hfill (59) \\
+60 & Угорське парування DETR & $\hat{\sigma} = \arg\min_{\sigma \in \mathfrak{S}_N} \sum \mathcal{L}_{\text{match}}(y_i, \hat{y}_{\sigma(i)})$ \hfill (60) \\
+61 & Угорська втрата DETR & $\mathcal{L}_{\text{Hungarian}} = \sum [-\log \hat{p}_{\hat{\sigma}(i)}(c_i) + \mathbf{1}_{\{c_i \neq \varnothing\}} \mathcal{L}_{\text{box}}]$ \hfill (61) \\
+62 & Box loss DETR & $\mathcal{L}_{\text{box}} = \lambda_{\text{IoU}} \mathcal{L}_{\text{IoU}} + \lambda_{L1} \|b_i - \hat{b}\|_1$ \hfill (62) \\
+63 & EPE (End-Point Error) & $\text{EPE} = \frac{1}{N} \sum \sqrt{(u-\hat{u})^2 + (v-\hat{v})^2}$ \hfill (63) \\
+64 & AAE (Angular Average Error) & $\text{AAE} = \frac{1}{N} \sum \arccos\left(\frac{u\hat{u}+v\hat{v}+1}{\sqrt{u^2+v^2+1}\sqrt{\hat{u}^2+\hat{v}^2+1}}\right)$ \hfill (64) \\
+65 & RMSE (Root Mean Square Error) & $\text{RMSE} = \sqrt{\frac{1}{N} \sum (d-\hat{d})^2}$ \hfill (65) \\
+66 & MAE (Mean Absolute Error) & $\text{MAE} = \frac{1}{N} \sum |d-\hat{d}|$ \hfill (66) \\
+67 & MSE (Mean Squared Error) & $\text{MSE} = \frac{1}{N} \sum (d-\hat{d})^2$ \hfill (67) \\
+68 & PSNR (Peak Signal-to-Noise Ratio) & $\text{PSNR} = 10 \log_{10}\left(\frac{\text{MAX}^2}{\text{MSE}}\right)$ \hfill (68) \\
+69 & IoU (Intersection over Union) & $\text{IoU} = \frac{|A \cap B|}{|A \cup B|}$ \hfill (69) \\
+70 & DICE коефіцієнт & $\text{DICE} = \frac{2|A \cap B|}{|A|+|B|} = \frac{2 \cdot \text{TP}}{2 \cdot \text{TP} + \text{FP} + \text{FN}}$ \hfill (70) \\
+71 & Точність (Precision) & $\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}$ \hfill (71) \\
+72 & Повнота (Recall) & $\text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}$ \hfill (72) \\
+73 & F1-міра & $F_1 = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$ \hfill (73) \\
+74 & AUC-ROC & $\text{AUC} = \int_0^1 \text{TPR}(FPR) \, d(\text{FPR})$ \hfill (74) \\
+75 & Min-Max нормалізація & $D_{\text{norm}} = \frac{D - \min(D)}{\max(D) - \min(D)} \times 255$ \hfill (75) \\
+76 & Середнє значення глибини & $\mu_D = \frac{1}{N} \sum D(x_i,y_i)$ \hfill (76) \\
+77 & Стандартне відхилення глибини & $\sigma_D = \sqrt{\frac{1}{N} \sum (D(x_i,y_i) - \mu_D)^2}$ \hfill (77) \\
+78 & Z-нормалізація (стандартизація) & $D_{\text{std}} = \frac{D - \mu_D}{\sigma_D}$ \hfill (78) \\
+79 & Відтінок (Hue) оптичного потоку & $h = \frac{\arctan(v,u)}{2\pi} \times 180^\circ$ \hfill (79) \\
+80 & Насиченість (Saturation) & $s = 255$ \hfill (80) \\
+81 & Яскравість (Value) & $v_{\text{bright}} = \min\left(255, \frac{\sqrt{u^2+v^2}}{\max(\sqrt{u^2+v^2})} \times 255\right)$ \hfill (81) \\
+82 & Jet colormap (R-компонента) & $R(z) = \begin{cases} 0, & z<0.2 \\ 4z-0.8, & 0.2\leq z<0.45 \\ 1, & 0.45\leq z<0.75 \\ -4z+4, & 0.75\leq z<1 \\ 0, & z\geq1 \end{cases}$ \hfill (82) \\
+83 & Jet colormap (G-компонента) & $G(z) = \begin{cases} 0, & z<0.2 \\ 4z-0.8, & 0.2\leq z<0.35 \\ 1, & 0.35\leq z<0.65 \\ -4z+3.6, & 0.65\leq z<0.9 \\ 0, & z\geq0.9 \end{cases}$ \hfill (83) \\
+84 & Jet colormap (B-компонента) & $B(z) = \begin{cases} 4z+0.2, & z<0.2 \\ 1, & 0.2\leq z<0.45 \\ -4z+2.8, & 0.45\leq z<0.7 \\ 0, & z\geq0.7 \end{cases}$ \hfill (84) \\
+85 & Plasma colormap & $\text{Plasma}(z) = \text{interpolate}([0,0.2,0.4,0.6,0.8,1], [\text{col}_0,\text{col}_1,\text{col}_2,\text{col}_3,\text{col}_4,\text{col}_5])$ \hfill (85) \\
+\hline
+\caption{Повний перелік усіх 85 формул інформаційної технології ДІПДО}
+\label{tab:all_formulas}
+\end{longtable}
+
+\newpage
+
+\section*{Список позначень}
+\addcontentsline{toc}{section}{Список позначень}
+
+\begin{longtable}{|c|l|}
+\hline
+\textbf{Позначення} & \textbf{Опис} \\
+\hline
+$x, y$ & Просторові координати пікселя \\
+$t$ & Час (номер кадру) \\
+$I(x,y,t)$ & Інтенсивність (яскравість) пікселя в точці $(x,y)$ в момент часу $t$ \\
+$I_{\text{gray}}(x,y)$ & Зображення в градаціях сірого \\
+$I_x = \frac{\partial I}{\partial x}$ & Часткова похідна інтенсивності по координаті $x$ (просторовий градієнт) \\
+$I_y = \frac{\partial I}{\partial y}$ & Часткова похідна інтенсивності по координаті $y$ (просторовий градієнт) \\
+$I_t = \frac{\partial I}{\partial t}$ & Часткова похідна інтенсивності по часу (часовий градієнт) \\
+$I_1, I_2$ & Перший та другий послідовні кадри відеопослідовності \\
+$u(x,y), v(x,y)$ & Компоненти оптичного потоку по осях $x$ та $y$ \\
+$F(x,y) = [u, v]^T$ & Вектор оптичного потоку \\
+$\hat{F}$ & Передбачений оптичний потік (вихід нейронної мережі) \\
+$F_{\text{pred}}$ & Передбачений оптичний потік \\
+$F_{\text{gt}}$ & Істинний (ground truth) оптичний потік \\
+$f(x)$ & Поліноміальне представлення зображення в точці $x$ \\
+$d$ & Вектор зміщення між кадрами \\
+$A, A_1, A_2$ & Матриці квадратичних коефіцієнтів полінома \\
+$b, b_1, b_2$ & Вектори лінійних коефіцієнтів полінома \\
+$c, c_1, c_2$ & Вільні члени полінома \\
+$p, p_i$ & Піксель або точка в просторі зображення \\
+$D(x,y)$ & Карта глибини (значення глибини в пікселі $(x,y)$) \\
+$D_{\text{blur}}(x,y)$ & Карта глибини, отримана методом Blur \\
+$D_{\text{grad}}(x,y)$ & Карта глибини, отримана градієнтним методом (Лаплас) \\
+$D_{\text{sobel}}(x,y)$ & Карта глибини, отримана методом Собеля \\
+$D_{\text{norm}}(x,y)$ & Нормалізована карта глибини (Min-Max) \\
+$D_{\text{std}}(x,y)$ & Стандартизована карта глибини (Z-нормалізація) \\
+$D_{\text{final}}(x,y)$ & Фінальна карта глибини після ансамблювання \\
+$d_{\text{pred}}(p)$ & Передбачена глибина в точці $p$ \\
+$d_{\text{true}}(p)$ & Істинна глибина в точці $p$ \\
+$\hat{d}_i$ & Передбачена глибина для $i$-го пікселя \\
+$d_i$ & Істинна глибина для $i$-го пікселя \\
+$Z(p)$ & Глибина в точці $p$ (в GeoNet) \\
+$Z_0$ & Опорна глибина \\
+$\Omega$ & Область об'єкта (множина пікселів, що належать об'єкту) \\
+$|\Omega| = N_\Omega$ & Кількість пікселів в області $\Omega$ \\
+$\nabla$ & Оператор градієнта: $\nabla = \left(\frac{\partial}{\partial x}, \frac{\partial}{\partial y}\right)$ \\
+$\nabla u, \nabla v$ & Градієнти поля оптичного потоку \\
+$\nabla^2$ & Оператор Лапласа: $\nabla^2 = \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2}$ \\
+$\nabla^2 I$ & Лапласіан зображення \\
+$\nabla D_1$ & Градієнт карти глибини $D_1$ \\
+$\alpha$ & Параметр регуляризації в методі Хорна-Шунка \\
+$*$ & Операція згортки \\
+$G(x,y)$ & Ядро Гауса (функція Гауса) \\
+$\sigma$ & Стандартне відхилення (параметр розмиття) \\
+$k$ & Радіус ядра згортки ($k = 3\sigma$) \\
+$L$ & Ядро Лапласа (матриця 3×3) \\
+$L_{\text{full}}$ & Розширене ядро Лапласа з діагоналями \\
+$G_x, G_y$ & Градієнти Собеля по осях $x$ та $y$ \\
+$\mu, \mu_D$ & Середнє значення (математичне сподівання) карти глибини \\
+$\sigma_D$ & Стандартне відхилення карти глибини \\
+$\min(D), \max(D)$ & Мінімальне та максимальне значення карти глибини \\
+$\theta$ & Кут напрямку руху об'єкта (радіани) \\
+$\theta(x,y)$ & Кут напрямку руху в точці $(x,y)$ \\
+$\theta_i$ & Кут напрямку для $i$-го пікселя \\
+$v$ & Швидкість об'єкта (пікселів/кадр) \\
+$v(t)$ & Швидкість об'єкта в момент часу $t$ \\
+$a$ & Прискорення об'єкта \\
+$z$ & Глибина об'єкта (Z-координата) \\
+$x_c, y_c$ & Координати центру об'єкта \\
+$x_{\min}, x_{\max}$ & Мінімальна та максимальна координати $x$ bounding box об'єкта \\
+$y_{\min}, y_{\max}$ & Мінімальна та максимальна координати $y$ bounding box об'єкта \\
+$T(t)$ & Траєкторія об'єкта \\
+$p(t_i) = (x_i, y_i)$ & Положення об'єкта в момент $t_i$ \\
+$\tilde{p}(t_i)$ & Згладжена траєкторія об'єкта \\
+$Q, K, V$ & Матриці запитів (Queries), ключів (Keys), значень (Values) \\
+$d_k$ & Розмірність простору ключів \\
+$W_i^Q, W_i^K, W_i^V, W^O$ & Матриці проекцій в механізмі багатоголової уваги \\
+$h$ & Кількість голів уваги (attention heads) \\
+$\text{head}_i$ & $i$-та голова уваги \\
+$\text{Attention}$ & Функція уваги \\
+$\text{MultiHead}$ & Функція багатоголової уваги \\
+$\text{Concat}$ & Операція конкатенації \\
+$\text{softmax}$ & Функція softmax \\
+$z_0, z_l$ & Токени на вхідному та $l$-му шарі трансформера \\
+$x_{\text{class}}$ & Спеціальний токен класифікації \\
+$x_p^i$ & $i$-й патч зображення \\
+$E$ & Матриця проекції патчів \\
+$E_{\text{pos}}$ & Позиційне кодування \\
+$\text{MSA}$ & Multi-Head Self-Attention (багатоголова увага) \\
+$\text{LN}$ & Layer Normalization (шарова нормалізація) \\
+$L$ & Кількість шарів у трансформері \\
+$\text{GRU}$ & Gated Recurrent Unit (вентильований рекурентний блок) \\
+$C(x_t)$ & Кореляційний об'єм \\
+$x_t$ & Стан оптичного потоку на кроці $t$ \\
+$h_t$ & Прихований стан GRU \\
+$\Delta x_t$ & Оновлення стану потоку \\
+$C_{ijkl}$ & Кореляційний об'єм (4-вимірний тензор) \\
+$H, W$ & Висота та ширина зображення (у пікселях) \\
+$f_{ijhw}, g_{klhw}$ & Ознаки зображень у кореляційному об'ємі \\
+$\Phi_{\text{encoder}}$ & Згортковий енкодер FlowNet \\
+$\Phi_{\text{decoder}}$ & Декодер FlowNet \\
+$\text{Conv}_{k \times k}$ & Згортковий шар з ядром розміру $k \times k$ \\
+$[I_1, I_2]$ & Конкатенація двох кадрів по канальній розмірності \\
+$\mathcal{L}_{\text{EPE}}$ & Функція втрат End-Point Error \\
+$\mathcal{L}_{\text{SI}}$ & Інваріантна до масштабу функція втрат \\
+$\mathcal{L}_{\text{Hungarian}}$ & Угорська функція втрат (Hungarian loss) \\
+$\mathcal{L}_{\text{match}}$ & Функція відповідності для парування \\
+$\mathcal{L}_{\text{box}}$ & Функція втрат для bounding box \\
+$\mathcal{L}_{\text{IoU}}$ & IoU-функція втрат \\
+$\mathcal{L}_i$ & Втрата для $i$-го масштабу \\
+$\hat{\sigma}$ & Оптимальне парування (результат угорського алгоритму) \\
+$\sigma \in \mathfrak{S}_N$ & Перестановка з множини всіх перестановок $\mathfrak{S}_N$ \\
+$y_i, \hat{y}_j$ & Істинні та передбачені значення \\
+$\hat{p}_{\hat{\sigma}(i)}(c_i)$ & Ймовірність класу $c_i$ для передбачення $\hat{\sigma}(i)$ \\
+$c_i$ & Мітка класу для $i$-го об'єкта \\
+$\mathbf{1}_{\{c_i \neq \varnothing\}}$ & Індикаторна функція (1, якщо об'єкт існує) \\
+$b_i, \hat{b}_j$ & Істинний та передбачений bounding box \\
+$\lambda_{\text{IoU}}, \lambda_{L1}$ & Вагові коефіцієнти в loss-функції DETR \\
+$\|\cdot\|_1$ & L1-норма (сума абсолютних значень) \\
+$\|\cdot\|_2$ & L2-норма (евклідова норма) \\
+$E$ & Функціонал, що мінімізується (в методі Хорна-Шунка) \\
+$\bar{u}^k, \bar{v}^k$ & Усереднені значення оптичного потоку на $k$-й ітерації \\
+$\text{TP}, \text{TN}$ & True Positive, True Negative (істинно-позитивні, істинно-негативні) \\
+$\text{FP}, \text{FN}$ & False Positive, False Negative (хибно-позитивні, хибно-негативні) \\
+$\text{TPR}$ & True Positive Rate (повнота) \\
+$\text{FPR}$ & False Positive Rate \\
+$M$ & Кількість моделей в ансамблі \\
+$f_i(x)$ & Прогноз $i$-ї моделі \\
+$\hat{y}_{\text{bag}}(x)$ & Ансамблевий прогноз (Bagging) \\
+$\hat{y}_{\text{boost}}(x)$ & Ансамблевий прогноз (Boosting) \\
+$\alpha_i$ & Вага $i$-ї моделі в бустингу \\
+$\epsilon_i$ & Помилка $i$-ї моделі \\
+$\tau$ & Поріг для маски помилок \\
+$\text{MAX}$ & Максимальне значення пікселя (255 для 8-бітних зображень) \\
+$R, G, B$ & Кольорові канали зображення (Red, Green, Blue) \\
+$h, s, v_{\text{bright}}$ & Компоненти HSV: Hue (відтінок), Saturation (насиченість), Value (яскравість) \\
+$R(z), G(z), B(z)$ & Компоненти кольору Jet colormap як функції глибини $z$ \\
+$\text{Plasma}(z)$ & Колірна карта Plasma \\
+$\text{interpolate}$ & Функція лінійної інтерполяції \\
+$\text{col}_i$ & Опорні кольори для інтерполяції \\
+$\text{IoU}$ & Intersection over Union (перетин до об'єднання) \\
+$\text{EPE}$ & End-Point Error (кінцева помилка точки) \\
+$\text{AAE}$ & Angular Average Error (середня кутова помилка) \\
+$\text{RMSE}$ & Root Mean Square Error (середньоквадратична помилка) \\
+$\text{MAE}$ & Mean Absolute Error (середня абсолютна помилка) \\
+$\text{PSNR}$ & Peak Signal-to-Noise Ratio (пікове відношення сигнал/шум) \\
+$\text{MSE}$ & Mean Squared Error (середньоквадратичне відхилення) \\
+$\text{AUC}$ & Area Under Curve (площа під кривою) \\
+$\text{ROC}$ & Receiver Operating Characteristic (робоча характеристика приймача) \\
+$N$ & Загальна кількість пікселів або зразків \\
+$T(p)$ & Матриця перетворення камери (GeoNet) \\
+$\text{proj}(p)$ & Проекція точки $p$ \\
+$\Delta t$ & Часовий інтервал ($\Delta t = 1$ кадр) \\
+\hline
+\end{longtable}
+
+\end{document}
