@@ -1,0 +1,491 @@
+\documentclass[14pt, a4paper]{extarticle}
+\usepackage[utf8]{inputenc}
+\usepackage[english,ukrainian]{babel}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{float}
+
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\usepackage[T2A]{fontenc}
+
+\geometry{top=2cm, bottom=2cm, left=2.5cm, right=2cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+}
+
+\numberwithin{equation}{section}
+
+\newtheorem{definition}{Визначення}[section]
+\newtheorem{theorem}{Теорема}[section]
+\newtheorem{proposition}{Твердження}[section]
+
+\title{МОДЕЛІ ДИСТАНЦІЙНОЇ ІДЕНТИФІКАЦІЇ ПАРАМЕТРІВ ДИНАМІЧНИХ ОБ'ЄКТІВ}
+\author{Наукове дослідження}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\section{МОДЕЛІ ДИСТАНЦІЙНОЇ ІДЕНТИФІКАЦІЇ ПАРАМЕТРІВ ДИНАМІЧНИХ ОБ'ЄКТІВ}
+
+У цьому розділі розглядаються математичні моделі для дистанційної ідентифікації параметрів динамічних об'єктів. Основна увага приділяється концептуальним засадам побудови моделей, методам ідентифікації параметрів за відеоданими, використанню оптичного потоку для визначення кінематичних характеристик, а також підходам до об'єднання різних моделей і методів.
+
+\subsection{Концепція моделей дистанційної ідентифікації}
+
+\subsubsection{Основні поняття та визначення}
+
+\begin{definition}
+\textbf{Дистанційна ідентифікація динамічного об'єкта} — це процес визначення просторових, кінематичних та динамічних характеристик об'єкта за даними відеоспостереження без безпосереднього контакту з об'єктом.
+\end{definition}
+
+\begin{definition}
+\textbf{Модель дистанційної ідентифікації} — це математичний апарат, що встановлює зв'язок між спостережуваними відеоданими $V(x,y,t)$ та параметрами об'єкта $\Theta = \{\theta_1, \theta_2, \ldots, \theta_n\}$.
+\end{definition}
+
+Загальна концептуальна модель дистанційної ідентифікації може бути представлена у вигляді:
+
+\begin{equation}
+\boxed{\Theta = \mathcal{F}(V(x,y,t), \mathcal{M}, \mathcal{A})} \tag{1}
+\end{equation}
+
+де:
+\begin{itemize}
+\item $\Theta$ — множина параметрів об'єкта, що ідентифікуються;
+\item $V(x,y,t)$ — відеодані (послідовність кадрів);
+\item $\mathcal{M}$ — множина математичних методів обробки;
+\item $\mathcal{A}$ — множина архітектур нейронних мереж.
+\end{itemize}
+
+\subsubsection{Ієрархія параметрів динамічних об'єктів}
+
+Параметри динамічних об'єктів можна класифікувати за рівнем абстракції:
+
+\begin{enumerate}
+    \item \textbf{Геометричні параметри} — форма, розміри, просторове положення.
+    \item \textbf{Кінематичні параметри} — швидкість, напрямок руху, траєкторія, прискорення.
+    \item \textbf{Динамічні параметри} — маса, імпульс, енергія (оцінюються опосередковано).
+\end{enumerate}
+
+Математично ця ієрархія може бути представлена як:
+
+\begin{equation}
+\Theta = \{\Theta_{\text{geom}}, \Theta_{\text{kin}}, \Theta_{\text{dyn}}\} \tag{2}
+\end{equation}
+
+\begin{align}
+\Theta_{\text{geom}} &= \{(x_c, y_c, z), (w, h), \text{shape}\} \tag{3} \\
+\Theta_{\text{kin}} &= \{v, \theta, T(t), a\} \tag{4} \\
+\Theta_{\text{dyn}} &= \{m, p, E\} \tag{5}
+\end{align}
+
+\subsubsection{Архітектура системи ідентифікації}
+
+Система дистанційної ідентифікації складається з наступних модулів:
+
+\begin{equation}
+\mathcal{S} = \{\mathcal{D}, \mathcal{F}, \mathcal{Z}, \mathcal{P}, \mathcal{V}\} \tag{6}
+\end{equation}
+
+де:
+\begin{itemize}
+\item $\mathcal{D}$ — модуль виявлення об'єктів (DETR/YOLO);
+\item $\mathcal{F}$ — модуль оптичного потоку (Farneback/Lucas-Kanade/Horn-Schunck/FlowNet/RAFT);
+\item $\mathcal{Z}$ — модуль оцінки глибини (MiDaS/DPT/GeoNet);
+\item $\mathcal{P}$ — модуль обчислення параметрів;
+\item $\mathcal{V}$ — модуль візуалізації.
+\end{itemize}
+
+\subsection{Моделі ідентифікації параметрів за відеоданими}
+
+\subsubsection{Модель виявлення об'єктів на основі DETR}
+
+Модель DETR (Detection Transformer) базується на архітектурі трансформера та забезпечує кінцево-кінцеве виявлення об'єктів [citation:6]. Основна формула механізму уваги:
+
+\begin{equation}
+\boxed{\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V} \tag{7}
+\end{equation}
+
+Багатоголова увага дозволяє моделювати різні типи залежностей:
+
+\begin{equation}
+\boxed{\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h) W^O} \tag{8}
+\end{equation}
+
+\begin{equation}
+\text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V) \tag{9}
+\end{equation}
+
+Оптимальне парування між передбаченнями та істинними об'єктами знаходиться за допомогою угорського алгоритму:
+
+\begin{equation}
+\hat{\sigma} = \arg\min_{\sigma \in \mathfrak{S}_N} \sum_{i=1}^N \mathcal{L}_{\text{match}}(y_i, \hat{y}_{\sigma(i)}) \tag{10}
+\end{equation}
+
+Функція втрат DETR має вигляд:
+
+\begin{equation}
+\boxed{\mathcal{L}_{\text{Hungarian}}(y, \hat{y}) = \sum_{i=1}^N \left[ -\log \hat{p}_{\hat{\sigma}(i)}(c_i) + \mathbf{1}_{\{c_i \neq \varnothing\}} \mathcal{L}_{\text{box}}(b_i, \hat{b}_{\hat{\sigma}(i)}) \right]} \tag{11}
+\end{equation}
+
+\subsubsection{Модель оцінки глибини MiDaS}
+
+Модель MiDaS призначена для монокулярної оцінки глибини. Вона розв'язує проблему відносної глибини:
+
+\begin{equation}
+d_{\text{pred}}(p) = \alpha \cdot d_{\text{true}}(p) + \beta \tag{12}
+\end{equation}
+
+Багатомасштабна функція втрат забезпечує навчання на різних масштабах:
+
+\begin{equation}
+\mathcal{L} = \frac{1}{N} \sum_{i=1}^N \frac{1}{2\sigma_i^2} \mathcal{L}_i + \log \sigma_i \tag{13}
+\end{equation}
+
+Інваріантна до масштабу втрата дозволяє навчатися на даних з різними масштабами глибини:
+
+\begin{equation}
+\boxed{\mathcal{L}_{\text{SI}} = \frac{1}{N} \sum_{i,j} \left[ (\log y_i - \log \hat{y}_i) - (\log y_j - \log \hat{y}_j) \right]^2} \tag{14}
+\end{equation}
+
+\subsubsection{Модель DPT для щільної оцінки глибини}
+
+DPT (Dense Prediction Transformer) поєднує трансформерну архітектуру з механізмом уваги:
+
+\begin{equation}
+z_l = \text{MSA}(\text{LN}(z_{l-1})) + z_{l-1}, \quad l=1,\ldots,L \tag{15}
+\end{equation}
+
+Вхідні токени формуються як:
+
+\begin{equation}
+z_0 = [x_{\text{class}}; x_p^1 E; x_p^2 E; \ldots; x_p^N E] + E_{\text{pos}} \tag{16}
+\end{equation}
+
+\subsection{Визначення параметрів методами оптичного потоку}
+
+\subsubsection{Метод Хорна-Шунка (глобальний метод)}
+
+Метод Хорна-Шунка [citation:1][citation:8] базується на мінімізації функціоналу, що поєднує базове рівняння оптичного потоку з умовою гладкості. Основне рівняння оптичного потоку має вигляд:
+
+\begin{equation}
+I_x u + I_y v + I_t = 0 \tag{17}
+\end{equation}
+
+Функціонал, що мінімізується:
+
+\begin{equation}
+E = \iint \left[(I_x u + I_y v + I_t)^2 + \alpha^2 \left( \|\nabla u\|^2 + \|\nabla v\|^2 \right) \right] dx\,dy \tag{18}
+\end{equation}
+
+Ітераційний розв'язок:
+
+\begin{align}
+u^{k+1} &= \bar{u}^k - \frac{I_x (I_x \bar{u}^k + I_y \bar{v}^k + I_t)}{\alpha^2 + I_x^2 + I_y^2} \tag{19} \\
+v^{k+1} &= \bar{v}^k - \frac{I_y (I_x \bar{u}^k + I_y \bar{v}^k + I_t)}{\alpha^2 + I_x^2 + I_y^2} \tag{20}
+\end{align}
+
+\subsubsection{Метод Лукаса-Канаде (локальний метод)}
+
+Метод Лукаса-Канаде [citation:2][citation:9] базується на припущенні, що оптичний потік є локально постійним у межах вікна. Система рівнянь:
+
+\begin{equation}
+\begin{bmatrix} 
+I_x(p_1) & I_y(p_1) \\ 
+I_x(p_2) & I_y(p_2) \\ 
+\vdots & \vdots \\ 
+I_x(p_n) & I_y(p_n) 
+\end{bmatrix} 
+\begin{bmatrix} u \\ v \end{bmatrix} = 
+-\begin{bmatrix} I_t(p_1) \\ I_t(p_2) \\ \vdots \\ I_t(p_n) \end{bmatrix} \tag{21}
+\end{equation}
+
+Розв'язок методом найменших квадратів:
+
+\begin{equation}
+\begin{bmatrix} u \\ v \end{bmatrix} = (A^T A)^{-1} A^T b \tag{22}
+\end{equation}
+
+\subsubsection{Метод Farneback (поліноміальний метод)}
+
+Метод Farneback [citation:3][citation:10] базується на поліноміальній апроксимації зображення:
+
+\begin{equation}
+f(x) \approx x^T A x + b^T x + c \tag{23}
+\end{equation}
+
+Для двох послідовних кадрів:
+
+\begin{align}
+f_1(x) &= x^T A_1 x + b_1^T x + c_1 \tag{24} \\
+f_2(x) &= f_1(x-d) \approx (x-d)^T A_1 (x-d) + b_1^T (x-d) + c_1 \tag{25}
+\end{align}
+
+Вектор зміщення:
+
+\begin{equation}
+d = -\frac{1}{2} A_1^{-1} (b_2 - b_1) \tag{26}
+\end{equation}
+
+\subsubsection{Модель FlowNet (нейромережевий метод)}
+
+Модель FlowNet [citation:4] є однією з перших згорткових нейронних мереж для задачі оптичного потоку:
+
+\begin{equation}
+\hat{F} = \Phi_{\text{decoder}}(\Phi_{\text{encoder}}(I_1, I_2)) \tag{27}
+\end{equation}
+
+Функція втрат EPE (End-Point Error):
+
+\begin{equation}
+\mathcal{L}_{\text{EPE}} = \frac{1}{N} \sum_{i=1}^N \|F_{\text{pred}}(i) - F_{\text{gt}}(i)\|_2 \tag{28}
+\end{equation}
+
+\subsubsection{Модель RAFT (рекурентний метод)}
+
+Модель RAFT [citation:5] використовує рекурентну архітектуру для ітеративного уточнення потоку:
+
+\begin{equation}
+C_{ijkl} = \frac{1}{\sqrt{HW}} \sum_{h,w} f_{ijhw} \cdot g_{klhw} \tag{29}
+\end{equation}
+
+\begin{equation}
+\Delta x_t, h_{t+1} = \text{GRU}([x_t, C(x_t)], h_t) \tag{30}
+\end{equation}
+
+\subsubsection{Модель швидкості об'єкта}
+
+Швидкість об'єкта визначається як середня величина оптичного потоку в області об'єкта $\Omega$:
+
+\begin{equation}
+\boxed{v = \frac{1}{N_\Omega} \sum_{(x,y) \in \Omega} \|F(x,y)\|} \tag{31}
+\end{equation}
+
+де $F(x,y) = [u(x,y), v(x,y)]^T$ — вектор оптичного потоку.
+
+В інтегральній формі:
+
+\begin{equation}
+v = \frac{1}{|\Omega|} \iint_{\Omega} \sqrt{u(x,y)^2 + v(x,y)^2} \, dx\,dy \tag{32}
+\end{equation}
+
+\subsubsection{Модель напрямку руху}
+
+Напрямок руху об'єкта обчислюється через векторне усереднення кутів:
+
+\begin{equation}
+\theta(x,y) = \arctan\left( \frac{v(x,y)}{u(x,y)} \right) \tag{33}
+\end{equation}
+
+\begin{equation}
+\boxed{\theta = \arctan\left( \frac{\sum_{(x,y) \in \Omega} \sin\theta(x,y)}{\sum_{(x,y) \in \Omega} \cos\theta(x,y)} \right)} \tag{34}
+\end{equation}
+
+Спрощена форма (середнє арифметичне кутів):
+
+\begin{equation}
+\theta = \frac{1}{N_\Omega} \sum_{(x,y) \in \Omega} \arctan\left( \frac{v(x,y)}{u(x,y)} \right) \tag{35}
+\end{equation}
+
+\subsubsection{Модель просторового положення}
+
+Координати центру об'єкта в площині зображення:
+
+\begin{align}
+x_c &= \frac{x_{\min} + x_{\max}}{2} \tag{36} \\
+y_c &= \frac{y_{\min} + y_{\max}}{2} \tag{37}
+\end{align}
+
+Глибина (Z-координата) визначається як медіанне значення карти глибини в області об'єкта:
+
+\begin{equation}
+\boxed{z = \text{median}\left\{ D(x,y) \mid (x,y) \in \Omega \right\}} \tag{38}
+\end{equation}
+
+Альтернативно — як середнє арифметичне:
+
+\begin{equation}
+z = \frac{1}{|\Omega|} \iint_{\Omega} D(x,y) \, dx\,dy \tag{39}
+\end{equation}
+
+\subsubsection{Модель траєкторії об'єкта}
+
+Траєкторія об'єкта представляється у вигляді дискретної множини положень у часі:
+
+\begin{equation}
+\boxed{T(t) = \left\{ p(t_1), p(t_2), \ldots, p(t_n) \right\}} \tag{40}
+\end{equation}
+
+де $p(t_i) = (x_i, y_i)$ — положення об'єкта в момент $t_i$.
+
+Для зменшення шумів використовується згладжена траєкторія (ковзне середнє):
+
+\begin{equation}
+\tilde{p}(t_i) = \frac{1}{2k+1} \sum_{j=-k}^{k} p(t_{i+j}) \tag{41}
+\end{equation}
+
+\subsubsection{Модель прискорення об'єкта}
+
+Прискорення об'єкта визначається як похідна швидкості за часом:
+
+\begin{equation}
+\boxed{a = \frac{v(t+1) - v(t)}{\Delta t}} \tag{42}
+\end{equation}
+
+де $\Delta t = 1$ кадр (дискретний час).
+
+\subsection{Об'єднання моделей і методів ідентифікації}
+
+\subsubsection{Сумісна модель GeoNet}
+
+Модель GeoNet реалізує сумісну оцінку глибини та оптичного потоку на основі геометричних обмежень:
+
+\begin{equation}
+\boxed{I_2(p) = I_1(p + f(p))} \tag{43}
+\end{equation}
+
+\begin{equation}
+f(p) = T(p) \cdot \frac{Z(p) - Z_0}{Z(p)} \cdot \text{proj}(p) \tag{44}
+\end{equation}
+
+Ця модель дозволяє використовувати синергію між двома типами даних.
+
+\subsubsection{Ансамблева модель Bagging}
+
+Ансамблева модель Bagging передбачає усереднення результатів кількох моделей:
+
+\begin{equation}
+\boxed{\hat{y}_{\text{bag}}(x) = \frac{1}{M} \sum_{i=1}^{M} f_i(x)} \tag{45}
+\end{equation}
+
+У контексті оцінки глибини:
+
+\begin{equation}
+D_{\text{bag}}(x,y) = \frac{1}{M} \sum_{i=1}^{M} D_i(x,y) \tag{46}
+\end{equation}
+
+\subsubsection{Адаптивна модель Boosting}
+
+Модель Boosting використовує зважену комбінацію з виправленням помилок:
+
+\begin{equation}
+\hat{y}_{\text{boost}}(x) = \sum_{i=1}^{M} \alpha_i f_i(x) \tag{47}
+\end{equation}
+
+Вага кожної моделі обчислюється на основі її помилки:
+
+\begin{equation}
+\alpha_i = \frac{1}{2} \ln\left( \frac{1 - \epsilon_i}{\epsilon_i} \right) \tag{48}
+\end{equation}
+
+Адаптивне комбінування результатів оцінки глибини:
+
+\begin{equation}
+\boxed{D_{\text{final}}(x) = \begin{cases} 
+D_1(x), & \text{якщо } |\nabla D_1(x)| \leq \tau \\ 
+D_2(x), & \text{якщо } |\nabla D_1(x)| > \tau 
+\end{cases}} \tag{49}
+\end{equation}
+
+\subsubsection{Інтегральна модель ідентифікації}
+
+Інтегральна модель об'єднує всі компоненти в єдину систему:
+
+\begin{equation}
+\boxed{\Theta = \mathcal{P}\left(\mathcal{F}(I_1,I_2), \mathcal{Z}(I_2), \mathcal{D}(I_2)\right)} \tag{50}
+\end{equation}
+
+де:
+\begin{itemize}
+\item $\mathcal{F}$ — модель оптичного потоку;
+\item $\mathcal{Z}$ — модель оцінки глибини;
+\item $\mathcal{D}$ — модель виявлення об'єктів;
+\item $\mathcal{P}$ — модель обчислення параметрів.
+\end{itemize}
+
+Повна система рівнянь для обчислення параметрів має вигляд:
+
+\begin{equation}
+\begin{cases}
+\text{boxes} = \mathcal{D}(I_2) \\
+F = \mathcal{F}(I_1, I_2) \\
+D = \mathcal{Z}(I_2) \\
+\forall \text{box} \in \text{boxes}: \quad v = \frac{1}{|\Omega|} \iint_{\Omega} \|F\| dxdy \\
+\quad \theta = \arctan\left(\frac{\iint_{\Omega} \sin\theta(F) dxdy}{\iint_{\Omega} \cos\theta(F) dxdy}\right) \\
+\quad z = \underset{(x,y)\in\Omega}{\text{median}} D(x,y)
+\end{cases} \tag{51}
+\end{equation}
+
+\subsection{Висновки до розділу}
+
+У розділі 3 розглянуто математичні моделі для дистанційної ідентифікації параметрів динамічних об'єктів. Проведений аналіз дозволяє зробити наступні висновки:
+
+\begin{enumerate}
+    \item \textbf{Концептуальна модель} (1) визначає загальну структуру системи ідентифікації як композицію модулів виявлення, оцінки оптичного потоку, оцінки глибини та обчислення параметрів (6).
+    
+    \item \textbf{Модель DETR} (7-11) забезпечує кінцево-кінцеве виявлення об'єктів з використанням механізму багатоголової уваги, що дозволяє моделювати довгострокові залежності в зображенні [citation:6].
+    
+    \item \textbf{Моделі оптичного потоку} представлені різними підходами:
+    \begin{itemize}
+        \item Класичний метод Хорна-Шунка (17-20) — глобальний підхід з умовою гладкості [citation:1]
+        \item Метод Лукаса-Канаде (21-22) — локальний підхід [citation:2]
+        \item Метод Farneback (23-26) — поліноміальний підхід [citation:3]
+        \item Нейромережеві методи FlowNet (27-28) та RAFT (29-30) — сучасні підходи глибинного навчання [citation:4][citation:5]
+    \end{itemize}
+    
+    \item \textbf{Моделі визначення параметрів} на основі оптичного потоку дозволяють обчислювати:
+    \begin{itemize}
+        \item швидкість об'єкта (31-32);
+        \item напрямок руху (34-35);
+        \item просторове положення (36-39);
+        \item траєкторію (40-41);
+        \item прискорення (42).
+    \end{itemize}
+    
+    \item \textbf{Моделі об'єднання} (Bagging, Boosting, GeoNet) дозволяють підвищити точність та надійність ідентифікації шляхом комбінування різних методів. Особливо ефективною є адаптивна модель Boosting (49), яка використовує локальні характеристики зображення для вибору найкращого методу.
+    
+    \item \textbf{Інтегральна модель} (50-51) об'єднує всі компоненти в єдину систему, що забезпечує повний цикл дистанційної ідентифікації — від вхідного відеопотоку до вихідних параметрів об'єктів.
+\end{enumerate}
+
+Розроблені математичні моделі створюють теоретичну основу для практичної реалізації системи дистанційної ідентифікації параметрів динамічних об'єктів.
+
+\begin{thebibliography}{99}
+
+\bibitem{horn1981determining}
+Horn B.K.P., Schunck B.G. (1981). Determining optical flow. \textit{Artificial Intelligence}, 17(1-3), 185-203. DOI: 10.1016/0004-3702(81)90024-2 [citation:1][citation:8]
+
+\bibitem{lucas1981iterative}
+Lucas B.D., Kanade T. (1981). An iterative image registration technique with an application to stereo vision. \textit{Proceedings of the 7th International Joint Conference on Artificial Intelligence (IJCAI)}, Vancouver, BC, August 24-28, pp. 674-679 [citation:2][citation:9]
+
+\bibitem{farneback2003two}
+Farnebäck G. (2003). Two-frame motion estimation based on polynomial expansion. \textit{Scandinavian Conference on Image Analysis (SCIA 2003)}, Halmstad, Sweden, June 29 – July 2, Proceedings, Lecture Notes in Computer Science, Vol. 2749, pp. 363-370. Springer, Berlin, Heidelberg. DOI: 10.1007/3-540-45103-X_50 [citation:3][citation:10]
+
+\bibitem{dosovitskiy2015flownet}
+Dosovitskiy A., Fischer P., Ilg E., Hausser P., Hazirbas C., Golkov V., van der Smagt P., Cremers D., Brox T. (2015). FlowNet: Learning optical flow with convolutional networks. \textit{Proceedings of the IEEE International Conference on Computer Vision (ICCV)}, Santiago, Chile, December 13-16, pp. 2758-2766 [citation:4]
+
+\bibitem{teed2020raft}
+Teed Z., Deng J. (2020). RAFT: Recurrent all-pairs field transforms for optical flow. \textit{European Conference on Computer Vision (ECCV 2020)}, Glasgow, UK, August 23-28, Proceedings, Part II, Lecture Notes in Computer Science, Vol. 12347, pp. 402-419. Springer. DOI: 10.1007/978-3-030-58536-5_24 [citation:5]
+
+\bibitem{carion2020end}
+Carion N., Massa F., Synnaeve G., Usunier N., Kirillov A., Zagoruyko S. (2020). End-to-end object detection with transformers. \textit{European Conference on Computer Vision (ECCV 2020)}, Glasgow, UK, August 23-28, Proceedings, Part I, Lecture Notes in Computer Science, Vol. 12346, pp. 213-229. Springer. DOI: 10.1007/978-3-030-58452-8_13 [citation:6]
+
+\end{thebibliography}
+
+\end{document}
