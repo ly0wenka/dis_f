@@ -48,6 +48,7 @@ def add_table_slide(prs, title, headers, rows):
             table.cell(row_idx+1, col_idx).text = str(val)
 
 def add_slide_with_image_placeholder(prs, title, text_lines, figure_ref):
+    """Додає слайд із текстом та міткою для зображення (без вставки файлу)"""
     slide_layout = prs.slide_layouts[1]
     slide = prs.slides.add_slide(slide_layout)
     slide.shapes.title.text = title
@@ -58,14 +59,18 @@ def add_slide_with_image_placeholder(prs, title, text_lines, figure_ref):
         p = tf.add_paragraph()
         p.text = line
         p.bullet = True
-    # Додаємо мітку для рисунка
-    left = Inches(8)
-    top = Inches(2)
-    width = Inches(4.5)
+    # Додаємо текст-підказку в місці зображення (праворуч)
+    left = Inches(8.5)
+    top = Inches(2.5)
+    width = Inches(4)
     height = Inches(4)
-    pic_placeholder = slide.shapes.add_picture(None, left, top, width, height)  # немає файлу
-    # Міняємо текст підпису (так не можна, але залишимо коментар)
-    print(f"  [Місце для рисунка: {figure_ref}]")
+    textbox = slide.shapes.add_textbox(left, top, width, height)
+    text_frame = textbox.text_frame
+    text_frame.word_wrap = True
+    p = text_frame.add_paragraph()
+    p.text = f"▶ ТУТ МАЄ БУТИ РИСУНОК: {figure_ref}"
+    p.font.size = Pt(12)
+    p.font.color.rgb = RGBColor(128, 128, 128)
 
 # ==================== Слайди ====================
 
